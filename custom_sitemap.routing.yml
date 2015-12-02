@@ -1,0 +1,15 @@
+custom_sitemap.sitemap:
+ path: '/sitemap.xml'
+ defaults:
+   _controller: '\Drupal\custom_sitemap\Controller\CustomSitemapController::getSitemap'
+ requirements:
+   _permission: 'access content'
+
+
+custom_sitemap.settings.form:
+  path: '/admin/config/search/custom-sitemap'
+  defaults:
+    _form: '\Drupal\custom_sitemap\Form\CustomSitemapSettingsForm'
+    _title: 'Settings'
+  requirements:
+    _permission: 'administer custom_sitemap'

@@ -1,0 +1,94 @@
+<?php
+/**
+ * @file
+ * Main module file containing hooks.
+ */
+
+use Drupal\custom_sitemap\Customsitemap;
+use Drupal\custom_sitemap\SitemapGenerator;
+
+/**
+ * Implements hook_form_alter.
+ */
+function custom_sitemap_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+
+  $form_entity = Customsitemap::get_form_entity($form_state);
+  $entity_type_name = Customsitemap::get_entity_type_name($form_entity);
+
+  if ($entity_type_name != FALSE && Customsitemap::get_plugin_path($entity_type_name)) {
+
+    $bundle_name = $form_entity->Id();
+
+    $sitemap = new Customsitemap;
+
+    // Get current content type sitemap settings.
+    $entity_types = $sitemap->get_entity_types();
+
+    $form['custom_sitemap'] = array(
+      '#group' => 'additional_settings',
+      '#title' => 'Custom XML sitemap',
+      '#type' => 'details'
+    );
+
+    $index_content_checked = isset($entity_types[$entity_type_name][$bundle_name]['index']) ? $entity_types[$entity_type_name][$bundle_name]['index'] : FALSE;
+    $form['custom_sitemap']['custom_sitemap_index_content'] = array(
+      '#type' => 'checkbox',
+      '#title' => 'Index content of this type',
+      '#default_value' => $index_content_checked,
+    );
+
+    $priority = isset($entity_types[$entity_type_name][$bundle_name]['priority']) ? $entity_types[$entity_type_name][$bundle_name]['priority'] : SitemapGenerator::PRIORITY_DEFAULT;
+    $form['custom_sitemap']['custom_sitemap_priority'] = array(
+      '#type' => 'select',
+      '#title' => 'Priority',
+      '#options' => SitemapGenerator::get_priority_select_values(),
+      '#default_value' => $priority,
+      '#description' => 'The priority entities of this bundle will have in the eyes of search engine bots.',
+    );
+
+    // Add submission handler.
+    $form['actions']['submit']['#submit'][] = 'custom_sitemap_entity_form_submit';
+  }
+}
+
+/**
+ * Form submission handler called in hook_form_alter.
+ */
+function custom_sitemap_entity_form_submit($form, &$form_state) {
+
+  // Only make changes in DB if sitemap settings actually changed.
+  if ($form['custom_sitemap']['custom_sitemap_index_content']['#default_value'] != $form['custom_sitemap']['custom_sitemap_index_content']['#value'] || $form['custom_sitemap']['custom_sitemap_priority']['#default_value'] != $form['custom_sitemap']['custom_sitemap_priority']['#value']) {
+
+    $entity = Customsitemap::get_form_entity($form_state);
+    $entity_type_name = Customsitemap::get_entity_type_name($entity);
+    $bundle_name = $entity->Id();
+
+    $sitemap = new Customsitemap;
+
+    // Get current entity type sitemap settings.
+    $entity_types = $sitemap->get_entity_types();
+
+    $values = $form_state->getValues();
+    $entity_types[$entity_type_name][$bundle_name]['index'] = $values['custom_sitemap_index_content'];
+    $entity_types[$entity_type_name][$bundle_name]['priority'] = $values['custom_sitemap_priority'];
+
+    // Save new entity type settings.
+    $sitemap->save_entity_types($entity_types);
+
+    // Regenerate sitemaps for all languages and save them into strings for performance reason (pseudo caching).
+    $sitemap->generate_all_sitemaps();
+
+    drupal_set_message(t('XML sitemaps have been regenerated for all languages.'));
+  }
+}
+
+/**
+ * Implements hook_cron.
+ */
+function custom_sitemap_cron() {
+
+  // Regenerate sitemaps for all languages and save them into strings for performance reasons (pseudo caching).
+  $sitemap = new Customsitemap;
+  $sitemap->generate_all_sitemaps();
+}
+

@@ -1,0 +1,3 @@
+custom_sitemap.settings.form:
+  route_name: custom_sitemap.settings.form
+  title: 'Settings'

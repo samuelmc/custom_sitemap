@@ -1,0 +1,6 @@
+custom_sitemap.settings.form:
+  title: 'Custom XML Sitemap'
+  description: 'Configure the XML sitemaps to help search engines find and index pages on your site.'
+  route_name: custom_sitemap.settings.form
+  parent: system.admin_config_search
+  menu_name: admin
