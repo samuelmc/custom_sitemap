@@ -5,11 +5,34 @@ custom_sitemap.sitemap:
  requirements:
    _permission: 'access content'
 
+custom_sitemap.overview:
+  path: '/admin/config/search/custom-sitemap'
+  defaults:
+    _controller: '\Drupal\custom_sitemap\Controller\CustomSitemapController::adminOverview'
+    _title: 'Overview'
+  requirements:
+    _permission: 'administer custom_sitemap'
 
 custom_sitemap.settings.form:
-  path: '/admin/config/search/custom-sitemap'
+  path: '/admin/config/search/custom-sitemap/settings'
   defaults:
     _form: '\Drupal\custom_sitemap\Form\CustomSitemapSettingsForm'
     _title: 'Settings'
+  requirements:
+    _permission: 'administer custom_sitemap'
+
+custom_sitemap.add.form:
+  path: '/admin/config/search/custom-sitemap/add'
+  defaults:
+    _form: '\Drupal\custom_sitemap\Form\AddCustomLinkForm'
+    _title: 'Add custom link'
+  requirements:
+    _permission: 'administer custom_sitemap'
+
+custom_sitemap.edit.form:
+  path: '/admin/config/search/custom-sitemap/edit'
+  defaults:
+    _form: '\Drupal\custom_sitemap\Form\AddCustomLinkForm'
+    _title: 'Add custom link'
   requirements:
     _permission: 'administer custom_sitemap'

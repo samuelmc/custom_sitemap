@@ -1,3 +1,9 @@
+custom_sitemap.overview:
+  route_name: custom_sitemap.overview
+  base_route: custom_sitemap.overview
+  title: 'List'
+
 custom_sitemap.settings.form:
   route_name: custom_sitemap.settings.form
+  base_route: custom_sitemap.overview
   title: 'Settings'

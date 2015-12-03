@@ -66,25 +66,6 @@ class CustomSitemapSettingsForm extends ConfigFormBase {
       'entity-types' => array(
         '#type' => 'vertical_tabs'
       ),
-      'custom' => array(
-        '#type' => 'details',
-        '#title' => $this->t('Custom links'),
-        '#group' => 'entity-types',
-        'add_custom_link' => array(
-          '#type' => ''
-        ),
-        'list' => array(
-          '#type' => 'table',
-          '#header' => array(
-            $this->t('Name'),
-            $this->t('Path'),
-            $this->t('Included in sitemap'),
-            $this->t('Priority'),
-            $this->t('Operations')
-          ),
-          '#rows' => array(),
-        )
-      ),
       'node' => array(
         '#type' => 'details',
         '#title' => $this->t('Content types'),
@@ -94,34 +75,8 @@ class CustomSitemapSettingsForm extends ConfigFormBase {
         '#type' => 'details',
         '#title' => $this->t('Vocabularies'),
         '#group' => 'entity-types'
-      ),
+      )
     );
-
-    foreach ($custom_links as $name => $custom_link) {
-      $form['custom']['list']['#rows'][] = array(
-        'data' => array(
-          'name' => $name,
-          'path' => $custom_link['path'],
-          'index' => ($custom_link['index'] ? $this->t('yes') : $this->t('No')),
-          'priority' => $custom_link['priority'],
-          'operations' => array(
-            'data' => array(
-              '#type' => 'operations',
-              '#links' => array(
-                'edit' => array(
-                  'title' => $this->t('Edit'),
-                  'url' => Url::fromRoute('path.admin_add'),
-                ),
-                'delete' => array(
-                  'title' => $this->t('Delete'),
-                  'url' => Url::fromRoute('path.admin_add'),
-                ),
-              ),
-            ),
-          )
-        )
-      );
-    }
 
     /** @var NodeType[] $content_types */
     $content_types = NodeType::loadMultiple();

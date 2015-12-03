@@ -7,6 +7,7 @@
 namespace Drupal\custom_sitemap\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Url;
 use Symfony\Component\HttpFoundation\Response;
 use Drupal\custom_sitemap\Customsitemap;
 
@@ -27,10 +28,55 @@ class CustomSitemapController extends ControllerBase {
     return new Response($output, Response::HTTP_OK, array('content-type' => 'application/xml'));
   }
 
-  public function customLinks() {
-    $sitemap = new Customsitemap();
+  public function adminOverview() {
 
-    return array();
+    $sitemap = new Customsitemap();
+    $custom_links = $sitemap->get_custom_links();
+
+    $build = array();
+
+    $build['custom_links_table'] = array(
+      '#type' => 'table',
+      '#header' => array(
+        $this->t('Name'),
+        $this->t('Path'),
+        $this->t('Included in sitemap'),
+        $this->t('Priority'),
+        $this->t('Operations')
+      ),
+      '#rows' => array(),
+      '#empty' => $this->t('No custom links added to the sitemap.'),
+    );
+
+    foreach ($custom_links as $name => $custom_link) {
+      $build['custom_links_table']['#rows'][] = array(
+        'data' => array(
+          'name' => $name,
+          'path' => $custom_link['path'],
+          'index' => ($custom_link['index'] ? $this->t('yes') : $this->t('No')),
+          'priority' => $custom_link['priority'],
+          'operations' => array(
+            'data' => array(
+              '#type' => 'operations',
+              '#links' => array(
+                'edit' => array(
+                  'title' => $this->t('Edit'),
+                  'url' => Url::fromRoute('path.admin_add'),
+                ),
+                'delete' => array(
+                  'title' => $this->t('Delete'),
+                  'url' => Url::fromRoute('path.admin_add'),
+                ),
+              ),
+            ),
+          )
+        )
+      );
+    }
+
+    $build['custom_links_pager'] = array('#type' => 'pager');
+
+    return $build;
 
   }
 

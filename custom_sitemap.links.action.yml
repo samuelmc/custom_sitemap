@@ -1,0 +1,5 @@
+custom_sitemap.add.form:
+  route_name: custom_sitemap.add.form
+  title: 'Add custom link'
+  appears_on:
+    - custom_sitemap.overview
