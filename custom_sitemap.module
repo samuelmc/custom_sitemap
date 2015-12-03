@@ -6,11 +6,15 @@
 
 use Drupal\custom_sitemap\Customsitemap;
 use Drupal\custom_sitemap\SitemapGenerator;
+use Drupal\Core\Form\FormStateInterface;
 
 /**
  * Implements hook_form_alter.
+ * @param array $form
+ * @param FormStateInterface $form_state
+ * @param string $form_id
  */
-function custom_sitemap_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+function custom_sitemap_form_alter(&$form, FormStateInterface $form_state, $form_id) {
 
   $form_entity = Customsitemap::get_form_entity($form_state);
   $entity_type_name = Customsitemap::get_entity_type_name($form_entity);
@@ -53,8 +57,10 @@ function custom_sitemap_form_alter(&$form, \Drupal\Core\Form\FormStateInterface 
 
 /**
  * Form submission handler called in hook_form_alter.
+ * @param array $form
+ * @param FormStateInterface $form_state
  */
-function custom_sitemap_entity_form_submit($form, &$form_state) {
+function custom_sitemap_entity_form_submit($form, FormStateInterface &$form_state) {
 
   // Only make changes in DB if sitemap settings actually changed.
   if ($form['custom_sitemap']['custom_sitemap_index_content']['#default_value'] != $form['custom_sitemap']['custom_sitemap_index_content']['#value'] || $form['custom_sitemap']['custom_sitemap_priority']['#default_value'] != $form['custom_sitemap']['custom_sitemap_priority']['#value']) {

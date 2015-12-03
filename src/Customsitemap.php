@@ -8,6 +8,7 @@ namespace Drupal\custom_sitemap;
 use Doctrine\Common\Util\Debug;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Language\LanguageInterface;
+use Drupal\Core\Config\Config;
 
 /**
  * Customsitemap class.
@@ -16,6 +17,7 @@ class Customsitemap {
 
   const SITEMAP_PLUGIN_PATH = 'src/LinkGenerators/EntityTypeLinkGenerators';
 
+  /** @var Config */
   private $config;
   private $sitemap;
 
@@ -79,6 +81,10 @@ class Customsitemap {
 
   public function save_entity_types($entity_types) {
     $this->save_config('entity_types', $entity_types);
+  }
+
+  public function save_custom_links($custom_links) {
+    $this->save_config('custom', $custom_links);
   }
 
   private function save_config($key, $value) {
@@ -148,5 +154,9 @@ class Customsitemap {
 
   public function get_entity_types() {
     return $this->config->get('entity_types');
+  }
+
+  public function get_custom_links() {
+    return $this->config->get('custom');
   }
 }

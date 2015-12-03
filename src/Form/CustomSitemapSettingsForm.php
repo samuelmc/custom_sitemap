@@ -11,6 +11,12 @@ namespace Drupal\custom_sitemap\Form;
 use Doctrine\Common\Util\Debug;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Config\Config;
+use Drupal\Core\Url;
+use Drupal\custom_sitemap\Customsitemap;
+use Drupal\custom_sitemap\SitemapGenerator;
+use Drupal\node\Entity\NodeType;
+use Drupal\taxonomy\Entity\Vocabulary;
 
 /**
  * Class CustomSitemapSettingsForm
@@ -51,11 +57,108 @@ class CustomSitemapSettingsForm extends ConfigFormBase {
    *   The form structure.
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $config = $this->config('custom_sitemap.settings');
-    $form = array();
 
+    $sitemap = new Customsitemap();
+    $entity_types = $sitemap->get_entity_types();
+    $custom_links = $sitemap->get_custom_links();
+
+    $form = array(
+      'entity-types' => array(
+        '#type' => 'vertical_tabs'
+      ),
+      'custom' => array(
+        '#type' => 'details',
+        '#title' => $this->t('Custom links'),
+        '#group' => 'entity-types',
+        'add_custom_link' => array(
+          '#type' => ''
+        ),
+        'list' => array(
+          '#type' => 'table',
+          '#header' => array(
+            $this->t('Name'),
+            $this->t('Path'),
+            $this->t('Included in sitemap'),
+            $this->t('Priority'),
+            $this->t('Operations')
+          ),
+          '#rows' => array(),
+        )
+      ),
+      'node' => array(
+        '#type' => 'details',
+        '#title' => $this->t('Content types'),
+        '#group' => 'entity-types'
+      ),
+      'taxonomy_term' => array(
+        '#type' => 'details',
+        '#title' => $this->t('Vocabularies'),
+        '#group' => 'entity-types'
+      ),
+    );
+
+    foreach ($custom_links as $name => $custom_link) {
+      $form['custom']['list']['#rows'][] = array(
+        'data' => array(
+          'name' => $name,
+          'path' => $custom_link['path'],
+          'index' => ($custom_link['index'] ? $this->t('yes') : $this->t('No')),
+          'priority' => $custom_link['priority'],
+          'operations' => array(
+            'data' => array(
+              '#type' => 'operations',
+              '#links' => array(
+                'edit' => array(
+                  'title' => $this->t('Edit'),
+                  'url' => Url::fromRoute('path.admin_add'),
+                ),
+                'delete' => array(
+                  'title' => $this->t('Delete'),
+                  'url' => Url::fromRoute('path.admin_add'),
+                ),
+              ),
+            ),
+          )
+        )
+      );
+    }
+
+    /** @var NodeType[] $content_types */
+    $content_types = NodeType::loadMultiple();
+    $this->setEntityTypeDetailForm($form, 'node', $content_types, $entity_types['node']);
+
+    /** @var Vocabulary[] $vocabularies */
+    $vocabularies = Vocabulary::loadMultiple();
+    $this->setEntityTypeDetailForm($form, 'taxonomy_term', $vocabularies, $entity_types['taxonomy_term']);
 
     return parent::buildForm($form, $form_state);
+  }
+
+
+  /**
+   * @param array $form
+   * @param string $entity_type
+   * @param Vocabulary[] | NodeType[] $items
+   * @param array $config
+   */
+  private function setEntityTypeDetailForm(&$form, $entity_type, $items, $config) {
+    foreach ($items as $machine_name => $item) {
+      $form[$entity_type]["{$entity_type}-{$machine_name}"] = array(
+        '#type' => 'fieldset',
+        '#title' => $item->label(),
+        "{$entity_type}-{$machine_name}-index" => array(
+          '#type' => 'checkbox',
+          '#title' => $this->t('Include in sitemap'),
+          '#default_value' => (in_array($machine_name, array_keys($config)) && $config[$machine_name]['index'] == 1)
+        ),
+        "{$entity_type}-{$machine_name}-priority" => array(
+          '#type' => 'select',
+          '#title' => $this->t('Priority'),
+          '#options' => SitemapGenerator::get_priority_select_values(),
+          '#default_value' => in_array($machine_name, array_keys($config)) ? $config[$machine_name]['priority'] : SitemapGenerator::PRIORITY_DEFAULT,
+        )
+      );
+    }
   }
 
   /**
@@ -68,14 +171,19 @@ class CustomSitemapSettingsForm extends ConfigFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
 
-    $config = $this->config('custom_sitemap.settings');
+    $sitemap = new Customsitemap();
+    $entity_types = $sitemap->get_entity_types();
 
     $form_state->cleanValues();
-    foreach ($form_state->getValues() as $key => $value) {
-      $config->set($key, $value);
+
+    foreach ($form_state->getValues() as $setting => $value) {
+      $setting_keys = explode('-', $setting);
+      $entity_types[$setting_keys[0]][$setting_keys[1]][$setting_keys[2]] = $value;
     }
 
-    $config->save();
+    $sitemap->save_entity_types($entity_types);
+
+    $sitemap->generate_all_sitemaps();
 
     parent::submitForm($form, $form_state);
   }
