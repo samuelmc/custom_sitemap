@@ -30,16 +30,14 @@ class CustomSitemapController extends ControllerBase {
   public function customLinks() {
     $sitemap = new Customsitemap();
 
-
+    return array();
 
   }
 
 
   public function addCustomLink() {
 
-    return array(
-
-    );
+    return array();
 
   }
 

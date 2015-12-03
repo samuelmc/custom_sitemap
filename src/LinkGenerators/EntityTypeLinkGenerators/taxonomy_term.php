@@ -18,7 +18,7 @@ use Drupal\Core\Url;
  */
 class taxonomy_term extends EntityLinkGenerator {
 
-  function get_entity_bundle_links($entity_type, $bundle, $languages) {
+  function get_entity_bundle_links($entity_type, $bundle, $language) {
 
     $ids = array();
     $query = \Drupal::entityQuery($entity_type)
@@ -27,12 +27,10 @@ class taxonomy_term extends EntityLinkGenerator {
 
     $urls = array();
     foreach ($ids as $id => $entity) {
-      foreach ($languages as $language) {
-        $urls[] = Url::fromRoute("entity.$entity_type.canonical", array('taxonomy_term' => $id), array(
-          'language' => $language,
-          'absolute' => TRUE
-        ))->toString();
-      }
+      $urls[] = Url::fromRoute("entity.$entity_type.canonical", array('taxonomy_term' => $id), array(
+        'language' => $language,
+        'absolute' => TRUE
+      ))->toString();
     }
     return $urls;
   }

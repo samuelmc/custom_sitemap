@@ -24,7 +24,7 @@ class SitemapGenerator {
 
   private $entity_types;
   private $custom;
-  private $languages;
+  private $language;
   private $links;
 
   public static function get_priority_select_values() {
@@ -48,12 +48,12 @@ class SitemapGenerator {
     $this->custom = $custom;
   }
 
-  public function set_sitemap_lang($languages) {
+  public function set_sitemap_lang($language) {
 
     // Reset links array to make space for a sitemap with a different language.
     $this->links = array();
 
-    $this->languages = $languages;
+    $this->language = $language;
   }
 
   public function generate_sitemap() {
@@ -67,7 +67,7 @@ class SitemapGenerator {
   // Add custom links.
   private function generate_custom_links() {
     $link_generator = new CustomLinkGenerator();
-    $links = $link_generator->get_custom_links($this->custom , $this->languages);
+    $links = $link_generator->get_custom_links($this->custom , $this->language);
     $this->links = array_merge($this->links, $links);
   }
 
@@ -79,7 +79,7 @@ class SitemapGenerator {
         require_once $class_path;
         $class_name = "Drupal\\custom_sitemap\\LinkGenerators\\EntityTypeLinkGenerators\\$entity_type";
         $link_generator = new $class_name();
-        $links = $link_generator->get_entity_links($entity_type, $bundles, $this->languages);
+        $links = $link_generator->get_entity_links($entity_type, $bundles, $this->language);
         $this->links = array_merge($this->links, $links);
       }
     }

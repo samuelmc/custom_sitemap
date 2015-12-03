@@ -6,6 +6,8 @@
 
 namespace Drupal\custom_sitemap;
 use Doctrine\Common\Util\Debug;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Language\LanguageInterface;
 
 /**
  * Customsitemap class.
@@ -16,13 +18,19 @@ class Customsitemap {
 
   private $config;
   private $sitemap;
-  private $languages;
+
+  /** @var LanguageInterface */
+  private $language;
 
   function __construct() {
-    $this->set_languages();
+    $this->set_language();
     $this->set_config();
   }
 
+  /**
+   * @param FormStateInterface $form_state
+   * @return object | bool
+   */
   public static function get_form_entity($form_state) {
     if (!is_null($form_state->getFormObject()) && method_exists($form_state->getFormObject(), 'getEntity')) {
       $entity = $form_state->getFormObject()->getEntity();
@@ -46,8 +54,8 @@ class Customsitemap {
     return FALSE;
   }
 
-  private function set_languages() {
-    $this->languages = \Drupal::languageManager()->getLanguages();
+  private function set_language($language = null) {
+    $this->language = $language === null ? \Drupal::languageManager()->getCurrentLanguage() : $language;
   }
 
   private function set_config() {
@@ -59,7 +67,7 @@ class Customsitemap {
   private function get_sitemap_from_db() {
     $result = db_select('custom_sitemap', 's')
       ->fields('s', array('sitemap_string'))
-      //->condition('language_code', array_keys($this->languages), 'IN')
+      ->condition('language_code', $this->language->getId())
       ->execute()->fetchAll();
     $this->sitemap = !empty($result[0]->sitemap_string) ? $result[0]->sitemap_string : NULL;
   }
@@ -87,7 +95,7 @@ class Customsitemap {
 
   private function generate_sitemap() {
     $generator = new SitemapGenerator();
-    $generator->set_sitemap_lang($this->languages);
+    $generator->set_sitemap_lang($this->language);
     $generator->set_custom_links($this->config->get('custom'));
     $generator->set_entity_types($this->config->get('entity_types'));
     $this->sitemap = $generator->generate_sitemap();
@@ -117,7 +125,7 @@ class Customsitemap {
 //      ))
 //      ->execute();
     $exists_query = db_select('custom_sitemap')
-      //->condition('language_code', $this->language->getId())
+      ->condition('language_code', $this->language->getId())
       ->countQuery()->execute()->fetchField();
 
     if ($exists_query > 0) {
@@ -125,13 +133,13 @@ class Customsitemap {
         ->fields(array(
           'sitemap_string' => $this->sitemap,
         ))
-        //->condition('language_code', $this->language->getId())
+        ->condition('language_code', $this->language->getId())
         ->execute();
     }
     else {
       db_insert('custom_sitemap')
         ->fields(array(
-          //'language_code' => $this->language->getId(),
+          'language_code' => $this->language->getId(),
           'sitemap_string' => $this->sitemap,
         ))
         ->execute();
