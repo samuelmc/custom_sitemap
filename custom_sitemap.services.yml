@@ -1,4 +1,6 @@
 services:
   custom_sitemap.sitemap:
     class: Drupal\custom_sitemap\Customsitemap
-    arguments: ['@database', '@config.factory']
+    arguments: ['@database', '@config.factory', '@custom_sitemap.generator']
+  custom_sitemap.generator:
+    class: Drupal\custom_sitemap\SitemapGenerator

@@ -7,6 +7,7 @@
 namespace Drupal\custom_sitemap;
 
 
+use Doctrine\Common\Util\Debug;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Query\SelectInterface;
@@ -32,16 +33,20 @@ class Customsitemap {
   /** @var ConfigFactoryInterface */
   private $config_factory;
 
+  /** @var SitemapGenerator */
+  private $generator;
+
   /** @var null|string */
   private $sitemap;
 
   /** @var LanguageInterface */
   private $language;
 
-  function __construct(Connection $connection, ConfigFactoryInterface $config_factory) {
+  function __construct(Connection $connection, ConfigFactoryInterface $config_factory, SitemapGenerator $generator) {
     $this->set_language();
     $this->db = $connection;
     $this->config_factory = $config_factory;
+    $this->generator = $generator;
     $this->config = $this->config_factory->get(self::CONFIG_SETTINGS);
     $this->sitemap = $this->get_sitemap_from_db();
   }
@@ -106,22 +111,20 @@ class Customsitemap {
   }
 
   private function generate_sitemap() {
-    $generator = new SitemapGenerator();
-    $generator->set_sitemap_lang($this->language);
-    $generator->set_custom_links($this->config->get('custom'));
-    $generator->set_entity_types($this->config->get('entity_types'));
-    $this->sitemap = $generator->generate_sitemap();
+    $this->generator->set_sitemap_lang($this->language);
+    $this->generator->set_custom_links($this->config->get('custom'));
+    $this->generator->set_entity_types($this->config->get('entity_types'));
+    $this->sitemap = $this->generator->generate_sitemap();
     $this->save_sitemap();
   }
 
   public function generate_all_sitemaps() {
-    $generator = new SitemapGenerator();
-    $generator->set_custom_links($this->config->get('custom'));
-    $generator->set_entity_types($this->config->get('entity_types'));
+    $this->generator->set_custom_links($this->config->get('custom'));
+    $this->generator->set_entity_types($this->config->get('entity_types'));
     foreach(\Drupal::languageManager()->getLanguages() as $language) {
-      $generator->set_sitemap_lang($language);
+      $this->generator->set_sitemap_lang($language);
       $this->language = $language;
-      $this->sitemap = $generator->generate_sitemap();
+      $this->sitemap = $this->generator->generate_sitemap();
       $this->save_sitemap();
     }
   }
