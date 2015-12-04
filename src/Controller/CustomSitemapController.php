@@ -61,11 +61,11 @@ class CustomSitemapController extends ControllerBase {
               '#links' => array(
                 'edit' => array(
                   'title' => $this->t('Edit'),
-                  'url' => Url::fromRoute('path.admin_add'),
+                  'url' => Url::fromRoute('custom_sitemap.edit.form', array('name'=>$name)),
                 ),
                 'delete' => array(
                   'title' => $this->t('Delete'),
-                  'url' => Url::fromRoute('path.admin_add'),
+                  'url' => Url::fromRoute('custom_sitemap.delete.form', array('name'=>$name)),
                 ),
               ),
             ),

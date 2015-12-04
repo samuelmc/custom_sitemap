@@ -104,13 +104,13 @@ class CustomSitemapSettingsForm extends ConfigFormBase {
         "{$entity_type}-{$machine_name}-index" => array(
           '#type' => 'checkbox',
           '#title' => $this->t('Include in sitemap'),
-          '#default_value' => (in_array($machine_name, array_keys($config)) && $config[$machine_name]['index'] == 1)
+          '#default_value' => (array_key_exists($machine_name, $config) && $config[$machine_name]['index'] == 1)
         ),
         "{$entity_type}-{$machine_name}-priority" => array(
           '#type' => 'select',
           '#title' => $this->t('Priority'),
           '#options' => SitemapGenerator::get_priority_select_values(),
-          '#default_value' => in_array($machine_name, array_keys($config)) ? $config[$machine_name]['priority'] : SitemapGenerator::PRIORITY_DEFAULT,
+          '#default_value' => array_key_exists($machine_name, $config) ? $config[$machine_name]['priority'] : SitemapGenerator::PRIORITY_DEFAULT,
         )
       );
     }

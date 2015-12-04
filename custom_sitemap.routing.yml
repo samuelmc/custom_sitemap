@@ -25,14 +25,19 @@ custom_sitemap.add.form:
   path: '/admin/config/search/custom-sitemap/add'
   defaults:
     _form: '\Drupal\custom_sitemap\Form\AddCustomLinkForm'
-    _title: 'Add custom link'
   requirements:
     _permission: 'administer custom_sitemap'
 
 custom_sitemap.edit.form:
-  path: '/admin/config/search/custom-sitemap/edit'
+  path: '/admin/config/search/custom-sitemap/edit/{name}'
   defaults:
-    _form: '\Drupal\custom_sitemap\Form\AddCustomLinkForm'
-    _title: 'Add custom link'
+    _form: '\Drupal\custom_sitemap\Form\EditCustomLinkForm'
+  requirements:
+    _permission: 'administer custom_sitemap'
+
+custom_sitemap.delete.form:
+  path: '/admin/config/search/custom-sitemap/delete/{name}'
+  defaults:
+    _form: '\Drupal\custom_sitemap\Form\DeleteCustomLinkForm'
   requirements:
     _permission: 'administer custom_sitemap'

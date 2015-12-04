@@ -9,6 +9,7 @@
 namespace Drupal\custom_sitemap;
 
 use Drupal\custom_sitemap\LinkGenerators\CustomLinkGenerator;
+use Drupal\custom_sitemap\LinkGenerators\EntityLinkGenerator;
 
 /**
  * SitemapGenerator class.
@@ -78,6 +79,7 @@ class SitemapGenerator {
       if ($class_path !== FALSE) {
         require_once $class_path;
         $class_name = "Drupal\\custom_sitemap\\LinkGenerators\\EntityTypeLinkGenerators\\$entity_type";
+        /** @var EntityLinkGenerator $link_generator */
         $link_generator = new $class_name();
         $links = $link_generator->get_entity_links($entity_type, $bundles, $this->language);
         $this->links = array_merge($this->links, $links);
