@@ -5,7 +5,11 @@
  */
 
 namespace Drupal\custom_sitemap;
-use Doctrine\Common\Util\Debug;
+
+
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Database\Connection;
+use Drupal\Core\Database\Query\SelectInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Language\LanguageInterface;
 use Drupal\Core\Config\Config;
@@ -17,16 +21,29 @@ class Customsitemap {
 
   const SITEMAP_PLUGIN_PATH = 'src/LinkGenerators/EntityTypeLinkGenerators';
 
+  const CONFIG_SETTINGS = 'custom_sitemap.settings';
+
+  /** @var Connection */
+  private $db;
+
   /** @var Config */
   private $config;
+
+  /** @var ConfigFactoryInterface */
+  private $config_factory;
+
+  /** @var null|string */
   private $sitemap;
 
   /** @var LanguageInterface */
   private $language;
 
-  function __construct() {
+  function __construct(Connection $connection, ConfigFactoryInterface $config_factory) {
     $this->set_language();
-    $this->set_config();
+    $this->db = $connection;
+    $this->config_factory = $config_factory;
+    $this->config = $this->config_factory->get(self::CONFIG_SETTINGS);
+    $this->sitemap = $this->get_sitemap_from_db();
   }
 
   /**
@@ -60,23 +77,13 @@ class Customsitemap {
     $this->language = $language === null ? \Drupal::languageManager()->getCurrentLanguage() : $language;
   }
 
-  private function set_config() {
-    $this->get_config_from_db();
-    $this->get_sitemap_from_db();
-  }
-
-  // Get sitemap from database.
   private function get_sitemap_from_db() {
-    $result = db_select('custom_sitemap', 's')
+    /** @var SelectInterface $query */
+    $query = $this->db->select('custom_sitemap', 's')
       ->fields('s', array('sitemap_string'))
-      ->condition('language_code', $this->language->getId())
-      ->execute()->fetchAll();
-    $this->sitemap = !empty($result[0]->sitemap_string) ? $result[0]->sitemap_string : NULL;
-  }
-
-  // Get sitemap settings from configuration storage.
-  private function get_config_from_db() {
-    $this->config = \Drupal::config('custom_sitemap.settings');
+      ->condition('language_code', $this->language->getId());
+    $result = $query->execute()->fetchAll();
+    return (!empty($result[0]->sitemap_string)) ? $result[0]->sitemap_string : NULL;
   }
 
   public function save_entity_types($entity_types) {
@@ -88,8 +95,7 @@ class Customsitemap {
   }
 
   private function save_config($key, $value) {
-    \Drupal::service('config.factory')->getEditable('custom_sitemap.settings')->set($key, $value)->save();
-    $this->set_config();
+    $this->config_factory->getEditable(self::CONFIG_SETTINGS)->set($key, $value)->save();
   }
 
   public function get_sitemap() {
@@ -121,35 +127,13 @@ class Customsitemap {
   }
 
   private function save_sitemap() {
-
-    //todo: db_merge not working in D8(?), this is why the following queries are needed:
-//    db_merge('custom_sitemap')
-//      ->key(array('language_code', $this->lang))
-//      ->fields(array(
-//        'language_code' => $this->lang,
-//        'sitemap_string' => $this->sitemap,
-//      ))
-//      ->execute();
-    $exists_query = db_select('custom_sitemap')
-      ->condition('language_code', $this->language->getId())
-      ->countQuery()->execute()->fetchField();
-
-    if ($exists_query > 0) {
-      db_update('custom_sitemap')
-        ->fields(array(
-          'sitemap_string' => $this->sitemap,
-        ))
-        ->condition('language_code', $this->language->getId())
-        ->execute();
-    }
-    else {
-      db_insert('custom_sitemap')
-        ->fields(array(
-          'language_code' => $this->language->getId(),
-          'sitemap_string' => $this->sitemap,
-        ))
-        ->execute();
-    }
+    $this->db->upsert('custom_sitemap')
+      ->key(array('language_code', $this->language->getId()))
+      ->fields(array(
+        'language_code' => $this->language->getId(),
+        'sitemap_string' => $this->sitemap,
+      ))
+      ->execute();
   }
 
   public function get_entity_types() {

@@ -78,7 +78,7 @@ class DeleteCustomLinkForm extends ConfirmFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
 
-    $sitemap = new Customsitemap();
+    $sitemap = \Drupal::service('custom_sitemap.sitemap');
     $custom_links = $sitemap->get_custom_links();
 
     unset($custom_links[$this->link_name]);

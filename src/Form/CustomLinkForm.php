@@ -82,7 +82,7 @@ class CustomLinkForm extends ConfigFormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state, $name = null) {
 
-    $sitemap = new Customsitemap();
+    $sitemap = \Drupal::service('custom_sitemap.sitemap');
     $custom_links = $sitemap->get_custom_links();
 
     $form['#title'] = $this->t('Add new custom link');
@@ -125,7 +125,7 @@ class CustomLinkForm extends ConfigFormBase {
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
 
-    $sitemap = new Customsitemap();
+    $sitemap = \Drupal::service('custom_sitemap.sitemap');
     $custom_links = $sitemap->get_custom_links();
 
     $name = &$form_state->getValue('name');
@@ -159,7 +159,7 @@ class CustomLinkForm extends ConfigFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
 
-    $sitemap = new Customsitemap();
+    $sitemap = \Drupal::service('custom_sitemap.sitemap');
     $custom_links = $sitemap->get_custom_links();
 
     $form_state->cleanValues();

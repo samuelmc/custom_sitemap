@@ -58,7 +58,7 @@ class CustomSitemapSettingsForm extends ConfigFormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
 
-    $sitemap = new Customsitemap();
+    $sitemap = \Drupal::service('custom_sitemap.sitemap');
     $entity_types = $sitemap->get_entity_types();
     $custom_links = $sitemap->get_custom_links();
 
@@ -126,7 +126,7 @@ class CustomSitemapSettingsForm extends ConfigFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
 
-    $sitemap = new Customsitemap();
+    $sitemap = \Drupal::service('custom_sitemap.sitemap');
     $entity_types = $sitemap->get_entity_types();
 
     $form_state->cleanValues();

@@ -21,7 +21,7 @@ class CustomSitemapController extends ControllerBase {
    */
   public function getSitemap() {
 
-    $sitemap = new Customsitemap();
+    $sitemap = \Drupal::service('custom_sitemap.sitemap');
     $output = $sitemap->get_sitemap();
 
     // Display sitemap with correct xml header.
@@ -30,7 +30,7 @@ class CustomSitemapController extends ControllerBase {
 
   public function adminOverview() {
 
-    $sitemap = new Customsitemap();
+    $sitemap = \Drupal::service('custom_sitemap.sitemap');
     $custom_links = $sitemap->get_custom_links();
 
     $build = array();

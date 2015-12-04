@@ -1,0 +1,4 @@
+services:
+  custom_sitemap.sitemap:
+    class: Drupal\custom_sitemap\Customsitemap
+    arguments: ['@database', '@config.factory']
